@@ -1,0 +1,76 @@
+ADVICE FOR DEEP LEARNING
+
+We do not use L2 loss for logistic regression as it is not convex. MLE gives a convex objective function instead.
+
+Forward propagation/pass: calculate the output of the neural network.
+
+Backward propagation: compute the gradient of the network.
+
+Broad steps to ML:
+(1) The first step is to determine your goals. What is input and output data? What error metric (/loss function) to use? What is the target value for this error metric (i.e. above human performance or above a basic model)? Ensure error metric is a single number, which perhaps is version of constrained optimization problem where we max/min some metric subject to other metrics being above acceptable threshold.
+(2) Establish a working end-to-end pipeline as soon as possible: i.e. gather data, understand the data, clean the data, set up baseline model to beat, build and train neural network, achieve overfit.
+(3) Set up methods to diagnose where poor performance is arising, e.g. underfitting, overfitting, defect in data, defect in software.
+(4) Iteratively improve the system to first beat baseline, then overfit, and then balance generalized error, e.g. gather more data, adjust hyperparameters, change algorithms, etc. This usually involves iterating between overfitting and underfitting:
+(4i) reduce bias in training set to near Bayes Error (hypothetical best performance): gather more data, enrich architecture, perform error analysis (i.e. figure out reason that has highest share of errors in validation set and try to fix that; repeat) and explore more hyperparameters. First overfitting is a good start to figure out the boundary of performance.
+(4ii) reduce variance in test set: gather more data, regularize, constrain architecture.
+(5) Deploy the model. Present to stakeholders, ship the model, monitor performance in wild, build system to iteratively improve the model.
+
+Architecture:
+-Residual connections allow us to train much deeper neural networks (e.g. avoids vanishing or exploding gradients)
+-convolutional layers learn invariant input patterns
+-try inception networks if can't decide on next layer (e.g. between pool, conv, 1-d conv, etc.).
+-can use 1d convulations to reduce the dimensionality of any input by any linear transformation (e.g. remove a dimension, add one, scale up/down a dimension, etc.)
+
+Normalizing data:
+-Normalize data before applying a neural network.
+-A major reason is so the cost function is level sets that are more circular which is easier for gradient descent to solve. It is less susciptible to noise.
+-A simple start is to demean and unit standard deviation; however, it is better to have the data take the same range, e.g. 0-1.
+
+Handling missing data:
+-For categorical data, create a new category of the data is missing.
+-For numerical data, replace with mean or median ensuring no look ahead bias.
+
+Train, validation, and test splits:
+-It is now common with neural networks to do only the bare minimum in validation and test to assess the performance and the rest in training data. It will often be 99% train and 0.5% in validation and test each if that 0.5% gives a sufficient number of observations for evaluation.
+-It is of paramount importance to have the same data generating process for the training set and test set.
+
+Activation functions:
+-The default is to use ReLU
+
+Optimization:
+-Turn on mixed precision to speed up training as (e.g. tensorflow) will automatically use smaller floats (i.e. float 16) where we don't need the precision and then use more precision (i.e. float32) where we do, e.g. calculating gradients.
+-As we use the chain rule in back propagation and forward propagation is repeatedly scaling up the output, then we can have vanishing or exploding gradients if the weights are just below 1 or just above (in simplicity).
+-One way to solve vanishing or exploding gradients is with careful initialization of the parameters.
+--We heuristically initialize the bias parameters.
+--We have to initialize weights to different values otherwise there is not a clear difference between two nodes.
+--We want to initialize with very small weights so gradient descent does not get struck (tanh and sigmoid functions).
+--Setting small weights, (and smaller weights with more inputs), controls exploding and vanishing gradients.
+--You can use He intialization as a place to start for weight parameter initailization
+--Ideally, treat the parameters initial values as hyperparameters to train.
+-ADAM is a good optimization algorithm to begin with. Tune its hyperparameters. Ensure it incorporates learning rate decay.
+-After performing gradient descent, plot the cost function across the iterations to confirm it is improving.
+-Gradient checking can be very useful to ensure your back propagation algorithm is working correctly.
+--Basically, just perturb each parameter up and down by epsilon ~= 10^{-7} to calculate the difference in the cost function with these two values divided by 2 epsilon. We then want to see if our gradient is the same as this approximation in that the Euclidean distance between these two vectors normalized by the sum of their individual weights should be about 10^{-7} too. If it is above 10^{-5} or so, then there is probably a bug.
+--Remember any adjustments from regularization for the gradient.
+--Gradient checking does not work with dropout.
+-You want to set the mini-batch size to be somewhere between the size of the training data and just batch size of a single observation (i.e. SGD).
+--If using a small training set (say <2000 obs), then use batch gradient descent as it won't slow you down much.
+--Minibatch sizes of 64 to 512 work well. Notice: powers of 2^n for n \in N.
+-Remember: local minima aren't really a problem; it has to be concave up in all dimensions; instead more likely saddle point. Plateau's are a bigger problem; momentum in optimization helps with this, e.g. in Adam.
+-When tuning across hyperparameter grid, randomly select points as opposed to systematically testing as we really don't know what is optimal. Then zoom in on areas that perform well.
+
+Regularization:
+-It is generally a good idea to begin with regularization unless we have hundreds of millions of observations.
+-Early stopping is useful but Andrew Ng recommends just using l2 regularization to focus separately on minimizing bias and then minimizing variance separately. 
+-Dropout is also easy to implement, but remember it is just applied during training and that we have to account for it in forward and back propogation.
+-We typically ignore regularizing bias parameters as it's not worth the effort because the vast majority of the parameters are in the weights.
+-L2 is preferred to L1 regularization according to Andrew Ng.
+-Batch normalization is useful to speed up optimization and will make the neural net work better on a larger set of hyperparameters given we are smoothing out the cost funcs for each layer as opposed to just normalizing the input layer by normalizing the data; moreover, batch norm makes deeper weights more robust to changes in weights in earlier weights.
+--Ensure batch normal does some running average of layer normalization to account for it during inference.
+--No one knows for sure why batch normalization helps.
+
+Model evaluation:
+-if training loss doesn't fall or stalls, first remember this is always something one can solve as neural nets can fit any arbitrary func, i.e. perfect fit. try: (i) fixing gradient descent by adjusting optimizer, distribution of initial parameters, learning rate up or down, or increasing batch size for more stable gradients; 
+-if model fails to beat basic benchmark in validation data, need to go back to square one as likely something flawed with fundamental approach, i.e. data set up, architecture, etc.
+-if model beats simple benchmark on validation data but it never overfits, then increase model complexity.
+-if model fails to generalize well, try: (i) obtaining better data that more densely samples the target unknown manifold and/or better clean the data and/or cut dimensionality via feature selection; (ii) improve feature engineering; (iii) regularize the model via early stopping, weight penalities, dropout, a smaller model, etc.; 
