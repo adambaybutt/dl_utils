@@ -37,6 +37,10 @@ Train, validation, and test splits:
 Activation functions:
 -The default is to use ReLU
 
+Loss functions:
+-think carefully about the welfare function to ensure optimizing the right target
+-if important predicted values appear rarely in training data, think about useing a one-shot loss function (e.g. triplet loss)
+
 Optimization:
 -Turn on mixed precision to speed up training as (e.g. tensorflow) will automatically use smaller floats (i.e. float 16) where we don't need the precision and then use more precision (i.e. float32) where we do, e.g. calculating gradients.
 -As we use the chain rule in back propagation and forward propagation is repeatedly scaling up the output, then we can have vanishing or exploding gradients if the weights are just below 1 or just above (in simplicity).
@@ -58,6 +62,7 @@ Optimization:
 --Minibatch sizes of 64 to 512 work well. Notice: powers of 2^n for n \in N.
 -Remember: local minima aren't really a problem; it has to be concave up in all dimensions; instead more likely saddle point. Plateau's are a bigger problem; momentum in optimization helps with this, e.g. in Adam.
 -When tuning across hyperparameter grid, randomly select points as opposed to systematically testing as we really don't know what is optimal. Then zoom in on areas that perform well.
+-With very deep networks (e.g. RNNs), will have to implement gradient clipping to avoid exploding gradients. Monitor gradients to ensure not an issue.
 
 Regularization:
 -It is generally a good idea to begin with regularization unless we have hundreds of millions of observations.
