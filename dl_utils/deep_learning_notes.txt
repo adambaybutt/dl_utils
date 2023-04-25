@@ -1,12 +1,6 @@
-ADVICE FOR DEEP LEARNING
+NOTES ON DEEP LEARNING
 
-We do not use L2 loss for logistic regression as it is not convex. MLE gives a convex objective function instead.
-
-Forward propagation/pass: calculate the output of the neural network.
-
-Backward propagation: compute the gradient of the network.
-
-Broad steps to ML:
+Broad steps:
 (1) The first step is to determine your goals. What is input and output data? What error metric (/loss function) to use? What is the target value for this error metric (i.e. above human performance or above a basic model)? Ensure error metric is a single number, which perhaps is version of constrained optimization problem where we max/min some metric subject to other metrics being above acceptable threshold.
 (2) Establish a working end-to-end pipeline as soon as possible: i.e. gather data, understand the data, clean the data, set up baseline model to beat, build and train neural network, achieve overfit.
 (3) Set up methods to diagnose where poor performance is arising, e.g. underfitting, overfitting, defect in data, defect in software.
