@@ -45,15 +45,16 @@ Optimization:
 --Setting small weights, (and smaller weights with more inputs), controls exploding and vanishing gradients.
 --You can use He intialization as a place to start for weight parameter initailization
 --Ideally, treat the parameters initial values as hyperparameters to train.
--ADAM is a good optimization algorithm to begin with. Tune its hyperparameters. Ensure it incorporates learning rate decay.
+-ADAM is a good optimization algorithm to begin with. Tune ALL OF its hyperparameters. Ensure it incorporates learning rate decay.
 -After performing gradient descent, plot the cost function across the iterations to confirm it is improving.
 -Gradient checking can be very useful to ensure your back propagation algorithm is working correctly.
 --Basically, just perturb each parameter up and down by epsilon ~= 10^{-7} to calculate the difference in the cost function with these two values divided by 2 epsilon. We then want to see if our gradient is the same as this approximation in that the Euclidean distance between these two vectors normalized by the sum of their individual weights should be about 10^{-7} too. If it is above 10^{-5} or so, then there is probably a bug.
 --Remember any adjustments from regularization for the gradient.
 --Gradient checking does not work with dropout.
 -You want to set the mini-batch size to be somewhere between the size of the training data and just batch size of a single observation (i.e. SGD).
+--Do not tune batch size (Shallue et al 2018) but rather use the largest possible given the hardware at hand. The limiting factor is usually accelerator memory.
 --If using a small training set (say <2000 obs), then use batch gradient descent as it won't slow you down much.
---Minibatch sizes of 64 to 512 work well. Notice: powers of 2^n for n \in N.
+--Minibatch sizes of 64 to 512 work well. Notice: powers of 2.
 -Remember: local minima aren't really a problem; it has to be concave up in all dimensions; instead more likely saddle point. Plateau's are a bigger problem; momentum in optimization helps with this, e.g. in Adam.
 -When tuning across hyperparameter grid, randomly select points as opposed to systematically testing as we really don't know what is optimal. Then zoom in on areas that perform well.
 -With very deep networks (e.g. RNNs), will have to implement gradient clipping to avoid exploding gradients. Monitor gradients to ensure not an issue.
